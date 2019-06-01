@@ -1,0 +1,144 @@
+Option Explicit
+
+Sub stock_data()
+
+Dim ws_ct As Integer
+Dim int_i As Integer
+Dim sht As Worksheet
+Dim ticker As String
+Dim long_row As Long
+Dim last_row As Long
+Dim unique_ticker_row As Integer
+Dim total_vol As Double
+Dim open_price As Double
+Dim close_price As Double
+Dim yearly_change As Double
+Dim percent_change As Double
+Dim percent_increase As Double
+Dim percent_decrease As Double
+Dim greatest_total As Double
+Dim last_row_unique_ticker As Integer
+Dim row_ct As Integer
+Dim ticker_increase As String
+Dim ticker_decrease As String
+Dim ticker_greatest_total As String
+
+
+
+
+ws_ct = ActiveWorkbook.Worksheets.Count
+
+
+For int_i = 1 To ws_ct
+
+'Set sht = ActiveSheet
+Set sht = ActiveWorkbook.Worksheets(int_i)
+
+Sheets(sht.Name).Select
+
+    ' Get the last row number
+    last_row = sht.Cells(sht.Rows.Count, "A").End(xlUp).Row
+    unique_ticker_row = 2
+    
+    sht.Cells(1, "I").Value = "Ticker"
+    sht.Cells(1, "J").Value = "Yearly Change"
+    sht.Cells(1, "K").Value = "Percent Change"
+    sht.Cells(1, "L").Value = "Total Stock Volume"
+    sht.Cells(1, "P").Value = "Ticker"
+    sht.Cells(1, "Q").Value = "Value"
+    sht.Cells(2, "O").Value = "Greatest % increase"
+    sht.Cells(3, "O").Value = "Greatest % Decrease"
+    sht.Cells(4, "O").Value = "Greatest total volume"
+    
+    
+    For long_row = 2 To last_row
+           ' check first row with second row
+        If sht.Cells(long_row, 1).Value <> sht.Cells(long_row + 1, 1).Value Then
+            'MsgBox Cells(int_row, 1).Value
+            
+            'Get the unique ticker
+            ticker = sht.Cells(long_row, "A").Value
+            ' Get the open and close stock price
+            open_price = sht.Cells(long_row, "C").Value
+            close_price = sht.Cells(long_row, "F").Value
+            
+            total_vol = Cells(long_row, "G").Value + total_vol
+            
+            yearly_change = close_price - open_price
+            
+            
+            If close_price <> 0 Then
+                percent_change = yearly_change / close_price
+            End If
+                    
+            ' Insert value on respective cells
+            sht.Cells(unique_ticker_row, "I").Value = ticker
+            sht.Cells(unique_ticker_row, "J").Value = yearly_change
+            sht.Cells(unique_ticker_row, "K").Value = Format(percent_change, "Percent")
+            sht.Cells(unique_ticker_row, "L").Value = Round(total_vol, 0)
+            
+            
+            ' Set percent change coloum background to green if +ve and red if -ve value
+            If percent_change >= 0 Then
+                sht.Cells(unique_ticker_row, "K").Interior.ColorIndex = 4
+            Else
+                sht.Cells(unique_ticker_row, "K").Interior.ColorIndex = 3
+            End If
+                    
+            total_vol = 0
+            unique_ticker_row = unique_ticker_row + 1
+                    
+        Else
+            total_vol = total_vol + sht.Cells(long_row, "G").Value
+                    
+        End If
+        
+    Next long_row
+    
+    ' Get unique ticker column last row
+    last_row_unique_ticker = sht.Cells(sht.Rows.Count, "I").End(xlUp).Row
+    
+    'Greatest % increase, Greatest % Decrease and Greatest total volume
+    row_ct = 2
+    percent_increase = 0
+    percent_decrease = 0
+    greatest_total = 0
+    
+    For row_ct = 2 To last_row_unique_ticker
+            
+        'Get Greatest % increase
+        If sht.Cells(row_ct, "K").Value > percent_increase Then
+        
+            ticker_increase = sht.Cells(row_ct, "I").Value
+            percent_increase = sht.Cells(row_ct, "K").Value
+                
+            sht.Cells(2, "P").Value = ticker_increase
+            sht.Cells(2, "Q").Value = Format(percent_increase, "Percent")
+        'Get Greatest % Decrease
+        End If
+        
+        If sht.Cells(row_ct, "K").Value < percent_decrease Then
+        
+            ticker_decrease = sht.Cells(row_ct, "I").Value
+            percent_decrease = sht.Cells(row_ct, "K").Value
+                
+            sht.Cells(3, "P").Value = ticker_decrease
+            sht.Cells(3, "Q").Value = Format(percent_decrease, "Percent")
+        
+        End If
+        'Greatest total volume
+        If sht.Cells(row_ct, "L").Value > greatest_total Then
+        
+            ticker_greatest_total = sht.Cells(row_ct, "I").Value
+            greatest_total = sht.Cells(row_ct, "L").Value
+                
+            sht.Cells(4, "P").Value = ticker_greatest_total
+            sht.Cells(4, "Q").Value = greatest_total
+        
+        End If
+        
+    Next row_ct
+
+Next int_i
+
+End Sub
